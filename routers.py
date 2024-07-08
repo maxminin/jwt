@@ -20,7 +20,7 @@ def register_user(username, password, email):
                                "email": email,
                                "hashed_password": hashed_password}
     access_token = create_access_token(data={"username": username, "email": email})
-    refresh_token = create_refresh_token(data={"username": username})
+    refresh_token = create_refresh_token(data={"username": username, "email": email})
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer", username=username, email=email)
 
 
@@ -30,7 +30,7 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     if not user:
         raise HTTPException(status_code=400, detail="This user doesn't exist")
     access_token = create_access_token(data={"username": user.username, "email": user.email})
-    refresh_token = create_refresh_token(data={"username": user.username})
+    refresh_token = create_refresh_token(data={"username": user.username, "email": user.email})
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer", username=user.username, email=user.email)
 
 
@@ -42,6 +42,7 @@ def get_users():
     return users
 
 
-@accounts_router.get("/users/me", response_model=User)
-def get_me(user: Annotated[User, Depends(get_current_user)]):
-    return user
+
+
+@accounts_router.post("/refresh")
+def refresh():

@@ -22,6 +22,13 @@ def create_access_token(data: dict):
     return encoded_jwt_access
 
 
+def verify_refresh_token(refresh_token: str = Depends(oauth2_scheme)):
+    payload = pyjwt.decode(refresh_token, SECRET_KEY, algorithm=ALGORITHM)
+    exp: str = payload.get("exp")
+    if float(exp) < 0:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = pyjwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)

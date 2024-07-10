@@ -27,6 +27,17 @@ def verify_refresh_token(refresh_token: str = Depends(oauth2_scheme)):
     exp: str = payload.get("exp")
     if float(exp) < 0:
         raise HTTPException(status_code=401, detail="Invalid token")
+    else:
+        return True
+
+
+def get_new_access_token(token: str):
+    try:
+        verify_refresh_token(refresh_token=token)
+        payload = pyjwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)
+        create_access_token(payload)
+    except pyjwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Token is valid")
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)):

@@ -4,7 +4,7 @@ from database import fake_database, password_hasher
 from typing import Annotated, List
 from fastapi.security import OAuth2PasswordRequestForm
 from services import authenticate_user
-from jwt_handler import create_access_token, get_current_user, create_refresh_token
+from jwt_handler import create_access_token, get_new_access_token, create_refresh_token
 from schemas import Token
 
 
@@ -24,7 +24,7 @@ def register_user(username, password, email):
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer", username=username, email=email)
 
 
-@accounts_router.post("/login", response_model=User)
+@accounts_router.post("/login")
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -42,7 +42,6 @@ def get_users():
     return users
 
 
-
-
 @accounts_router.post("/refresh")
-def refresh():
+def refresh(token: str):
+    get_new_access_token(token=token)
